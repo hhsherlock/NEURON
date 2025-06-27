@@ -1,0 +1,1 @@
+MODOBJFILES= GluTrans.o Kir4.o kdrglia.o kpump.o potassiumd.o

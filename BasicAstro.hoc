@@ -1,0 +1,133 @@
+proc celldef() {
+  topol()
+  subsets()
+  geom()
+  biophys()
+  geom_nseg()
+}
+
+create soma, dend
+
+proc topol() { local i
+  connect dend(0), soma(1)
+  basic_shape()
+}
+proc basic_shape() {
+  soma {pt3dclear() pt3dadd(0, 0, 0, 1) pt3dadd(15, 0, 0, 1)}
+  dend {pt3dclear() pt3dadd(15, 0, 0, 1) pt3dadd(135, 0, 0, 1)}
+}
+
+objref all
+proc subsets() { local i
+  objref all
+  all = new SectionList()
+    soma all.append()
+    dend all.append()
+
+}
+
+
+
+proc PotasasiumExtra () { 
+    forall {
+        if (( (($1-x3d(1))^2 + ($2-y3d(1))^2  < $4^2))  && (($3-z3d(1))^2 < 10000)) {
+		   ko = $5
+        } else  {
+           ko = $6
+        }      
+    }
+	
+}
+
+
+proc geom() {
+  soma {  /*area = 100 */ L = diam = 5.6419  }
+  dend {  L = 100  diam = 1  }
+}
+proc geom_nseg() {
+   soma { nseg = 1  }
+   dend { nseg = 1  }
+}
+proc biophys() {
+  forsec all {
+    Ra = 100
+    cm = 0.8
+    insert pas
+      g_pas = 1e-005
+      e_pas = -75
+    insert kir4
+      gkir_kir4 = 0.1//100
+      NormK_kir4 = 0.7
+    insert kdifl
+      ki0_kdifl = 110
+      Dk_kdifl = 0.6
+      iextra_kdifl = 0
+    insert kpump
+      Kp_kpump = 0.1
+      Krest_kpump = 110
+	  imax_kpump=0.3
+    insert GluTrans
+      Gluout_GluTrans = 2e-005
+      density_GluTrans = 1 //1e+012
+	  insert k_ion
+		ko_k_ion=3
+		ki_k_ion=110
+	nai=10 
+		
+  }
+}
+access soma
+
+celldef()
+
+
+// Parameter of Glutamate release in two places
+    PX = 0                // X- Coordinate of the place
+    PY = -20              // Y - coordinate of the place
+	PZ =0                 // Z - coordinate of the place
+    PX2 = 0               // Distance in x-coordinate of another place of release. If you need to define a single place of release just PX2 = 0
+    RFRAP = 3.0           // Radius of release
+    TimeBegin = 5         // Time of release
+    DCoef = 0.60          // diffusion
+    KpLeak = 0.1          // Decay time of release
+    Kduration = 200       // Duration of potassium input
+    KCurrent = 1          // Amplitude of Extra Potassium currentin mM
+	KResting = 110 // Resting concentration of potasesium in mM
+
+    PX_o = 0              // X-Coordinate of extracellular potassium
+	PY_o = 25             // Y-Coordinate of extracellular potassium
+	PZ_o = 0              // Z-Coordinate of extracellular potassium
+	R_o  = 10                 // radius of extracellular potassium changes
+	PotassiumInside = 5       // Extracellular potassium cocnetration inside the circle
+    PotassiumBasic = 3        // Basic extracellular potassium cocnentration 
+
+
+ xpanel("")
+        xlabel("================== Potassium input ==================")
+        xvalue("X coordinate [K]in(um)","PX", 1,"", 0, 1 )
+        xvalue("Y coordinate [K]in (um)","PY", 1,"", 0, 1 )
+		xvalue("Z coordinate [K]in (um)","PZ ", 1,"", 0, 1 )
+        xvalue("Potassium [K]in input radius (um) ","RFRAP", 1,"", 0, 1 )
+        xvalue("Potassium [K]in input onset (ms)","TimeBegin", 1,"", 0, 1 )
+        xvalue("Duration of potassium input (ms)","Kduration", 1,"", 0, 1 )
+        //xvalue("Distance between two release (um)","PX2", 1,"", 0, 1 )
+        xvalue("Peak K+ current (mA/cm2)","KCurrent", 1,"", 0, 1 )
+        xvalue("Diffusion coefficient (um2/ms)","DCoef", 1,"", 0, 1 )
+        xvalue("K+ leak rate (mA/cm2)","KpLeak", 1,"", 0, 1 )
+		xvalue("Basal [K+]in concentration (mM)","KResting", 1,"", 0, 1 )
+		 xlabel("================== Extracellular potassium distribution ==================")
+		xvalue("X coordinate [K]o (um)", "PX_o", 1,"", 0, 1 )
+		xvalue("Y coordinate [K]o (um)", "PY_o", 1,"", 0, 1 )
+		xvalue("Z coordinate [K]o (um)", "PZ_o", 1,"", 0, 1 )
+	    xvalue("Potassium [K]o distribution radius (um) ", "R_o", 1,"", 0, 1 )
+	    xvalue("Potassium [K]o inside circle (mM)", "PotassiumInside", 1,"", 0, 1 )
+        xvalue("Basic [K]o outside circle (mM)", "PotassiumBasic", 1,"", 0, 1 )
+        xlabel("======================================================")
+        xpanel(625,164)
+
+proc advance() {
+    fadvance()
+   	
+    PotasasiumExtra (PX_o,PY_o,PZ_o,R_o, PotassiumInside, PotassiumBasic)
+	
+}

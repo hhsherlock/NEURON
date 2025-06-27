@@ -1,0 +1,5 @@
+
+load_file("nrngui.hoc")
+load_file("BasicAstro.hoc")
+load_file("BasicPlot.ses")
+load_file("Run.ses")
